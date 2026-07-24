@@ -24,6 +24,11 @@ services:
     ports:
       - "127.0.0.1:${PORT:-3000}:3000"
 
+    # Override the upstream docker-entrypoint.sh: its `prisma db push --skip-generate`
+    # uses a flag Prisma 7 removed, which crash-loops the container. The Prisma client
+    # is already generated at build time, and Prisma 7's `db push` does not regenerate.
+    entrypoint: ["/bin/sh", "-c", "echo '[opengsc] applying schema to '\"$DATABASE_URL\"; npx prisma db push && echo '[opengsc] starting Next.js' && exec npm start"]
+
     env_file:
       - .env
     environment:
