@@ -1,0 +1,57 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Production Docker Compose for gsc-bulk-tracker (OpenGSC).
+#
+# Self-contained — use ON ITS OWN, do NOT combine with the upstream compose.yaml:
+#     docker compose -f compose.prod.yaml up -d --build
+#
+# Differences from upstream compose.yaml (kept intact for reference/local use):
+#   * Publishes ONLY on 127.0.0.1 — the app is never exposed to the internet
+#     directly; Nginx reverse-proxies to it.
+#   * Adds a healthcheck (liveness) and bounded json-file logging.
+#   * Pins a container name and local image tag for predictable ops/rollback.
+# The SQLite DB lives on the named volume `opengsc-data` (/data/prod.db) and
+# survives rebuilds and updates.
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  opengsc:
+    build: .
+    image: gsc-bulk-tracker:local
+    container_name: gsc-bulk-tracker
+    restart: unless-stopped
+
+    # Loopback-only. Nginx (host) proxies https://<domain> -> 127.0.0.1:3000.
+    ports:
+      - "127.0.0.1:${PORT:-3000}:3000"
+
+    # Override the upstream docker-entrypoint.sh: its `prisma db push --skip-generate`
+    # uses a flag Prisma 7 removed, which crash-loops the container. The Prisma client
+    # is already generated at build time, and Prisma 7's `db push` does not regenerate.
+    entrypoint: ["/bin/sh", "-c", "echo '[opengsc] applying schema to '\"$DATABASE_URL\"; npx prisma db push && echo '[opengsc] starting Next.js' && exec npm start"]
+
+    env_file:
+      - .env
+    environment:
+      # Inside the container the DB always lives on the volume — overrides .env.
+      DATABASE_URL: "file:/data/prod.db"
+      NODE_ENV: production
+
+    volumes:
+      - opengsc-data:/data
+
+    healthcheck:
+      # Healthy as soon as Next.js accepts TCP/HTTP on 3000 (node has global fetch).
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3000/').then(()=>process.exit(0)).catch(()=>process.exit(1))\""]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 45s
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+volumes:
+  opengsc-data:
