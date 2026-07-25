@@ -319,20 +319,9 @@ export function ClarityPanel({ siteDbId, domain }: { siteDbId: string; domain?: 
           lowSample: (n: number) =>
             `Примечание: выборка маленькая (${n} ${plural(n, ["сессия", "сессии", "сессий"])}) — все выводы предварительные, статистически недостоверные.`,
         },
-        uk: {
-          langName: "Ukrainian",
-          auditTitle: "UX-аудит",
-          periodLine: (d: number) => `Період: ${d} дн. зібраних даних`,
-          sSummary: "🎯 Короткий підсумок",
-          sCritical: "🔴 Критичні знахідки (де втрачаємо гроші)",
-          sCheck: "⚠️ Що варто перевірити",
-          sRecs: "✅ Рекомендації",
-          lowSample: (n: number) =>
-            `Примітка: вибірка мала (${n} ${plural(n, ["сесія", "сесії", "сесій"])}) — усі висновки попередні, статистично недостовірні.`,
-        },
       } as const;
 
-      const L = PROMPT_I18N[language as "en" | "ru" | "uk"] ?? PROMPT_I18N.en;
+      const L = PROMPT_I18N[language as "en" | "ru"] ?? PROMPT_I18N.en;
 
       const sessionsVal = Number(view.metrics.find(m => m.name === "sessions")?.value ?? 0);
       const lowSample = sessionsVal > 0 && sessionsVal < 100;

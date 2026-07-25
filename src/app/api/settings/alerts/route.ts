@@ -43,7 +43,7 @@ export async function POST(req: Request) {
     trafficDrop: { ...cur.trafficDrop, ...(b.settings?.trafficDrop ?? {}) },
     ssl: { ...cur.ssl, ...(b.settings?.ssl ?? {}) },
     audit: { ...cur.audit, ...(b.settings?.audit ?? {}) },
-    lang: (b.settings?.lang === "ru" || b.settings?.lang === "uk" ? b.settings.lang : cur.lang ?? "en"),
+    lang: (b.settings?.lang === "ru" ? b.settings.lang : cur.lang ?? "en"),
   };
   s.rankDrop.threshold = Math.min(50, Math.max(1, Number(s.rankDrop.threshold) || DEFAULT_ALERT_SETTINGS.rankDrop.threshold));
   s.trafficDrop.percent = Math.min(95, Math.max(5, Number(s.trafficDrop.percent) || DEFAULT_ALERT_SETTINGS.trafficDrop.percent));

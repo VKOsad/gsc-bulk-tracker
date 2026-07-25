@@ -69,7 +69,7 @@ export async function POST(req: Request) {
   const rawDays = parseInt(String(b.days ?? 7), 10) || 7;
   const days = rawDays === 0 ? 0 : Math.min(3650, Math.max(1, rawDays));
   const ai = !!b.ai;
-  const lang = (b.lang === "ru" || b.lang === "uk" ? b.lang : "en") as "en" | "ru" | "uk";
+  const lang = (b.lang === "ru" ? b.lang : "en") as "en" | "ru";
 
   // Live per-engine rows for the page's Bing/Yandex tabs (lazy-loaded on tab click).
   if (action === "engine") {

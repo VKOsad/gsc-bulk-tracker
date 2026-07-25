@@ -164,7 +164,7 @@ function RowsTable({ title, rows, keyLabel, t, csvName }: { title: string; rows:
 
 export default function EngineView({ engine, domain, siteDbId, refreshKey, metrics, days, onSummary }: { engine: AltEngine; domain: string; siteDbId: string; refreshKey: number; metrics?: Set<string>; days?: number; onSummary?: (s: EngineSummary | null) => void }) {
   const { t, language } = useLanguage() as any;
-  const lang = (language === "ru" || language === "uk" ? language : "en") as "en" | "ru" | "uk";
+  const lang = (language === "ru" ? language : "en") as "en" | "ru";
   // Which metric lines to draw — driven by the shared toolbar toggles; default: all on.
   const active = metrics ?? new Set<string>(["clicks", "impressions", "ctr", "position"]);
   const [loading, setLoading] = useState(true);

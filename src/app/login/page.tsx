@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { TrendingUp, Globe, Shield, Moon, Sun } from "lucide-react";
+import { TrendingUp, Globe, Shield, Moon, Sun, Lock } from "lucide-react";
 import { useTheme } from "@/lib/ThemeContext";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
@@ -18,9 +19,9 @@ function GoogleIcon() {
 
 const content = {
   en: {
-    tagline: "Your personal",
-    highlight: "Search Console",
-    tagline2: "command center",
+    tagline: "Command center",
+    highlight: "22group",
+    tagline2: "",
     sub: "All your Google accounts, all your sites — one clean dashboard. No limits, no noise, no subscription.",
     features: [
       { title: "All accounts in one place", desc: "Connect multiple Google accounts and see all your GSC properties on a single dashboard." },
@@ -31,11 +32,14 @@ const content = {
     signInSub: "Sign in with your Google account. The first account becomes the owner of this dashboard.",
     signIn: "Sign in with Google",
     bullets: ["Google OAuth only — no passwords", "Connect multiple Google accounts", "Self-hosted on your VPS"],
+    gatePlaceholder: "Access password",
+    gateHint: "Enter the access password to enable sign-in",
+    gateOk: "Access granted — you can sign in",
   },
   ru: {
-    tagline: "Твой личный",
-    highlight: "Search Console",
-    tagline2: "командный центр",
+    tagline: "Командный центр",
+    highlight: "22group",
+    tagline2: "",
     sub: "Все Google аккаунты, все сайты — одна чистая панель. Без лимитов, без шума, без подписки.",
     features: [
       { title: "Все аккаунты в одном месте", desc: "Подключи несколько Google аккаунтов и смотри все GSC-сайты на одном экране." },
@@ -46,21 +50,9 @@ const content = {
     signInSub: "Войди через Google аккаунт. Первый аккаунт становится владельцем этого дашборда.",
     signIn: "Войти через Google",
     bullets: ["Только Google OAuth — никаких паролей", "Можно подключить несколько аккаунтов", "Self-hosted на вашем VPS"],
-  },
-  uk: {
-    tagline: "Твій особистий",
-    highlight: "Search Console",
-    tagline2: "командний центр",
-    sub: "Всі Google акаунти, всі сайти — одна чиста панель. Без лімітів, без шуму, без підписки.",
-    features: [
-      { title: "Всі акаунти в одному місці", desc: "Підключи кілька Google акаунтів і дивись всі GSC-сайти на одному екрані." },
-      { title: "Трафік з першого погляду", desc: "Міні-графіки для кожного сайту. Одразу видно зростання, падіння і тренди." },
-      { title: "Твої дані, твій сервер", desc: "Self-hosted. Дані Search Console нікуди не залишають твій VPS." },
-    ],
-    getStarted: "Увійти",
-    signInSub: "Увійди через Google акаунт. Перший акаунт стає власником цього дашборду.",
-    signIn: "Увійти через Google",
-    bullets: ["Лише Google OAuth — без паролів", "Можна підключити кілька акаунтів", "Self-hosted на вашому VPS"],
+    gatePlaceholder: "Пароль доступа",
+    gateHint: "Введите пароль доступа, чтобы включить вход",
+    gateOk: "Доступ разрешён — можно входить",
   },
 };
 
@@ -70,10 +62,22 @@ const featureIcons = [
   <Shield size={18} key="shield" />,
 ];
 
+// 22group burgundy accent — scoped to the login page via a CSS-variable override
+// on the root element (see below), so the rest of the app is unaffected.
+const BURGUNDY = "#A31D45";
+
+// Soft access gate: the Google button only unlocks when this code is typed.
+// NOTE: a client-side check is a deterrent, NOT real security — the value ships in
+// the JS bundle and the OAuth endpoint could be hit directly. For real protection
+// put nginx Basic Auth / Cloudflare Access in front of the whole site.
+const ACCESS_CODE = "moneynosleep";
+
 export default function LoginPage() {
   const { dark, setDark } = useTheme();
   const { language, setLanguage } = useLanguage();
   const c = content[language];
+  const [gate, setGate] = useState("");
+  const unlocked = gate === ACCESS_CODE;
 
   return (
     <div style={{
@@ -82,6 +86,8 @@ export default function LoginPage() {
       background: "var(--color-bg)",
       overflow: "hidden",
       position: "relative",
+      // Burgundy accent, login page only — overrides the global purple var here.
+      ["--color-accent-purple" as never]: BURGUNDY,
     }}>
       {/* ── Top-right controls ── */}
       <div style={{
@@ -96,7 +102,7 @@ export default function LoginPage() {
           border: "1px solid var(--color-border)",
           borderRadius: "8px", overflow: "hidden",
         }}>
-          {(["en", "ru", "uk"] as const).map(lang => (
+          {(["en", "ru"] as const).map(lang => (
             <button
               key={lang}
               onClick={() => setLanguage(lang)}
@@ -151,7 +157,7 @@ export default function LoginPage() {
         <div style={{
           position: "absolute", top: "10%", left: "-10%",
           width: "500px", height: "500px", borderRadius: "50%",
-          background: "radial-gradient(ellipse, rgba(139,92,246,0.13) 0%, transparent 70%)",
+          background: "radial-gradient(ellipse, rgba(163,29,69,0.22) 0%, transparent 70%)",
           pointerEvents: "none",
         }} />
 
@@ -168,8 +174,8 @@ export default function LoginPage() {
           marginBottom: "20px", maxWidth: "480px",
         }}>
           {c.tagline}<br />
-          <span style={{ color: "var(--color-accent-purple)" }}>{c.highlight}</span><br />
-          {c.tagline2}
+          <span style={{ color: "var(--color-accent-purple)" }}>{c.highlight}</span>
+          {c.tagline2 ? <><br />{c.tagline2}</> : null}
         </h1>
         <p style={{
           fontSize: "16px", color: "var(--color-text-secondary)",
@@ -184,8 +190,8 @@ export default function LoginPage() {
             <div key={f.title} style={{ display: "flex", gap: "14px", alignItems: "flex-start" }}>
               <div style={{
                 flexShrink: 0, width: "36px", height: "36px", borderRadius: "9px",
-                background: "rgba(139,92,246,0.12)",
-                border: "1px solid rgba(139,92,246,0.2)",
+                background: "rgba(163,29,69,0.14)",
+                border: "1px solid rgba(163,29,69,0.3)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 color: "var(--color-accent-purple)",
               }}>
@@ -224,23 +230,29 @@ export default function LoginPage() {
           </p>
 
           <button
-            onClick={() => signIn("google", { callbackUrl: "/" })}
+            onClick={() => { if (unlocked) signIn("google", { callbackUrl: "/" }); }}
+            disabled={!unlocked}
+            title={unlocked ? "" : c.gateHint}
             style={{
               display: "flex", alignItems: "center", justifyContent: "center", gap: "12px",
               width: "100%", padding: "14px 20px",
               borderRadius: "10px",
-              background: "#fff",
-              color: "#1f2937",
+              background: unlocked ? "#fff" : "var(--color-card)",
+              color: unlocked ? "#1f2937" : "var(--color-text-secondary)",
               fontSize: "15px", fontWeight: 600,
-              border: "none", cursor: "pointer",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-              transition: "box-shadow 0.2s, transform 0.15s",
+              border: unlocked ? "none" : "1px solid var(--color-border)",
+              cursor: unlocked ? "pointer" : "not-allowed",
+              opacity: unlocked ? 1 : 0.55,
+              boxShadow: unlocked ? "0 2px 8px rgba(0,0,0,0.2)" : "none",
+              transition: "box-shadow 0.2s, transform 0.15s, opacity 0.15s",
             }}
             onMouseOver={e => {
+              if (!unlocked) return;
               e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.3)";
               e.currentTarget.style.transform = "translateY(-1px)";
             }}
             onMouseOut={e => {
+              if (!unlocked) return;
               e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.2)";
               e.currentTarget.style.transform = "translateY(0)";
             }}
@@ -248,6 +260,33 @@ export default function LoginPage() {
             <GoogleIcon />
             {c.signIn}
           </button>
+
+          {/* Access gate — Google sign-in stays disabled until the password matches */}
+          <div style={{ marginTop: "14px", position: "relative" }}>
+            <Lock size={14} style={{ position: "absolute", left: "12px", top: "20px", transform: "translateY(-50%)", color: "var(--color-text-secondary)", pointerEvents: "none" }} />
+            <input
+              type="password"
+              value={gate}
+              onChange={e => setGate(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter" && unlocked) signIn("google", { callbackUrl: "/" }); }}
+              placeholder={c.gatePlaceholder}
+              autoComplete="off"
+              style={{
+                width: "100%", padding: "11px 14px 11px 36px",
+                borderRadius: "10px",
+                background: "var(--color-bg)",
+                color: "var(--color-text-primary)",
+                fontSize: "14px",
+                border: `1px solid ${gate.length === 0 ? "var(--color-border)" : unlocked ? "var(--color-accent-purple)" : "rgba(239,68,68,0.55)"}`,
+                outline: "none",
+                transition: "border-color 0.15s",
+                boxSizing: "border-box",
+              }}
+            />
+            <div style={{ fontSize: "11px", color: unlocked ? "var(--color-accent-green)" : "var(--color-text-secondary)", marginTop: "6px" }}>
+              {unlocked ? c.gateOk : c.gateHint}
+            </div>
+          </div>
 
           <div style={{ margin: "28px 0", height: "1px", background: "var(--color-border)" }} />
 
