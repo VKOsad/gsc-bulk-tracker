@@ -35,6 +35,8 @@ const STATUS_BY_CODE: Partial<Record<TopvisorErrorCode, number>> = {
   TOPVISOR_TIMEOUT: 504,
   TOPVISOR_BAD_RESPONSE: 502,
   TOPVISOR_REMOTE_ERROR: 502,
+  RANK_PROJECT_PARTIAL: 400,
+  COST_LIMIT_EXCEEDED: 402,
 };
 
 /** Turn any thrown error into a safe JSON response (never leaks the API key/stack). */

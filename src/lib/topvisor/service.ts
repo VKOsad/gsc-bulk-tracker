@@ -61,6 +61,23 @@ export function createTopvisorService(client: TopvisorClient) {
       return first ? mapProject(first) : null;
     },
 
+    /** Poll a project's check status (status_positions / positions_percent / _time). */
+    async getProjectStatus(
+      projectId: string | number,
+    ): Promise<{ statusPositions: number | null; percent: number | null; time: string | null }> {
+      const res = await client.post<RawProject[]>("get/projects_2/projects", {
+        id: Number(projectId),
+        fields: ["id", "status_positions", "positions_percent", "positions_time"],
+      });
+      const p = Array.isArray(res) ? res[0] : undefined;
+      const num = (v: unknown): number | null => (v == null ? null : Number(v));
+      return {
+        statusPositions: num(p?.status_positions),
+        percent: num(p?.positions_percent),
+        time: p?.positions_time != null ? String(p.positions_time) : null,
+      };
+    },
+
     /** Create a project; returns the new external project id. */
     async createProject(url: string, name?: string): Promise<string> {
       const res = await client.post<{ id?: number | string } | number | string>(

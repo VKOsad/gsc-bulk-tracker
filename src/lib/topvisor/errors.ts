@@ -15,7 +15,9 @@ export type TopvisorErrorCode =
   | "TOPVISOR_UNAVAILABLE"
   | "TOPVISOR_TIMEOUT"
   | "TOPVISOR_BAD_RESPONSE"
-  | "TOPVISOR_REMOTE_ERROR";
+  | "TOPVISOR_REMOTE_ERROR"
+  | "RANK_PROJECT_PARTIAL"
+  | "COST_LIMIT_EXCEEDED";
 
 export interface RemoteError {
   string?: string;
