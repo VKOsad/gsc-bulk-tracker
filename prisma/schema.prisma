@@ -770,7 +770,7 @@ model RankRegion {
   countryCode   String?
   language      String   @default("en")
   device        Int      @default(0) // 0 desktop | 1 tablet | 2 phone
-  depth         Int      @default(1) // 1..5 (Google: 1=Top10 … 5=Top50); Google Top-100 is not supported
+  depth         Int      @default(5) // 1..5 (Google: 1=Top10 … 5=Top50, the default); Google Top-100 is not supported
   enabled       Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
