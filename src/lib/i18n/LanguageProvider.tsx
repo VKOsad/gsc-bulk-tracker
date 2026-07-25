@@ -3,9 +3,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import en from "@/locales/en.json";
 import ru from "@/locales/ru.json";
-import uk from "@/locales/uk.json";
 
-type Language = "en" | "ru" | "uk";
+type Language = "en" | "ru";
 type Dictionary = typeof en;
 
 interface LanguageContextType {
@@ -16,18 +15,18 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-const dictionaries: Record<Language, Dictionary> = { en, ru, uk };
+const dictionaries: Record<Language, Dictionary> = { en, ru };
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [language, setLanguageState] = useState<Language>("en");
 
   useEffect(() => {
     const saved = localStorage.getItem("language") as Language;
-    if (saved === "en" || saved === "ru" || saved === "uk") {
+    if (saved === "en" || saved === "ru") {
       setLanguageState(saved);
     } else {
       const nav = navigator.language;
-      const browserLang: Language = nav.startsWith("uk") ? "uk" : nav.startsWith("ru") ? "ru" : "en";
+      const browserLang: Language = nav.startsWith("ru") ? "ru" : "en";
       setLanguageState(browserLang);
     }
   }, []);

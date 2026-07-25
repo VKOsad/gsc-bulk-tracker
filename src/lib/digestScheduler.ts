@@ -9,7 +9,7 @@ import { buildDigest, aiSummary, getDigestSettings, saveDigestSettings } from "@
 
 const TICK_MS = 60 * 60 * 1000;
 
-export async function sendDigestNow(userId: string, tag: string, days: number, ai: boolean, lang: "en" | "ru" | "uk" = "en"): Promise<{ content: string; sent: boolean }> {
+export async function sendDigestNow(userId: string, tag: string, days: number, ai: boolean, lang: "en" | "ru" = "en"): Promise<{ content: string; sent: boolean }> {
   const { content } = await buildDigest(userId, tag, days, lang);
   let full = content;
   if (ai) {

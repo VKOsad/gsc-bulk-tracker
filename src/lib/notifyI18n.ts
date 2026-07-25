@@ -1,12 +1,12 @@
 // Server-side i18n for Telegram/Slack notifications (alerts + digests). The browser's
 // LanguageProvider can't help here — schedulers run headless — so the UI saves the
 // user's current language into alertSettings/digestSettings and the templates below
-// render in that language. Same three locales as the app: en / ru / uk.
+// render in that language. Same locales as the app: en / ru.
 
-export type NotifyLang = "en" | "ru" | "uk";
+export type NotifyLang = "en" | "ru";
 
 export const normalizeLang = (v: unknown): NotifyLang =>
-  v === "ru" || v === "uk" ? v : "en";
+  v === "ru" ? v : "en";
 
 type Tpl = {
   // alerts
@@ -125,43 +125,5 @@ export const NOTIFY_L: Record<NotifyLang, Tpl> = {
     engineHdr: name => `*🔎 ${name} (живые данные):*`,
     engineTotals: (clicks, impr) => `  ${clicks} кликов · ${impr} показов`,
     engineTopSite: (name, clicks, impr) => `  ${name} — ${clicks} кликов · ${impr} показов`,
-  },
-  uk: {
-    rankDropTitle: kw => `📉 Падіння позиції: ${kw}`,
-    rankDropMsg: (site, kw, country, drop, from, to) => `*${site}* — «${kw}» (${country}) впав на ${drop} позицій: ${from} → ${to}.`,
-    trafficDropTitle: site => `🔻 Просідання трафіку: ${site}`,
-    trafficDropMsg: (site, pct, from, to) => `*${site}* — кліки впали на ${pct}% тиждень до тижня: ${from} → ${to}.`,
-    sslTitle: site => `🔒 Спливає SSL: ${site}`,
-    sslMsg: (site, days) => `*${site}* — SSL-сертифікат спливає через ${days} дн. Подовжте його (certbot renew / перевірте автоподовження).`,
-    auditTitle: site => `🩺 Низький бал аудиту: ${site}`,
-    auditMsg: (site, score, bad, total) => `*${site}* — health score аудиту ${score}/100 (${bad}/${total} сторінок із проблемами). Перегляньте вкладку Аудит.`,
-    digestTitleAll: "📊 Дайджест OpenGSC — всі сайти",
-    digestTitleTag: tag => `📊 Дайджест OpenGSC — тег «${tag}»`,
-    digestWindow: (days, date) => `_Останні ${days} дн. vs попередні ${days} дн. · ${date}_`,
-    digestRange: (from, to) => `_Період: ${from} — ${to}_`,
-    digestPrevRange: (from, to) => `_у порівнянні з ${from} — ${to}_`,
-    digestMore: n => `…ще ${n}`,
-    digestNoSitesTag: tag => `Немає сайтів із тегом «${tag}».`,
-    digestNoSites: "Сайти ще не підключені.",
-    totalClicks: (cur, delta) => `*Всього кліків:* ${cur} (${delta} до попер. періоду)`,
-    moreSites: n => `…і ще ${n} сайтів`,
-    winners: "*🏆 Запити, що виросли:*",
-    losers: "*⚠️ Запити, що впали:*",
-    rankMoves: "*📍 Рухи позицій:*",
-    aiSummary: "🤖 *AI-вижимка:*",
-    unitClicks: "кліків",
-    unitImpr: "показів",
-    allTime: "весь час",
-    portfolio: (n, up, down) => `*Портфель:* ${n} сайтів · 🟢 ${up} вгору · 🔴 ${down} вниз`,
-    clicksLine: (cur, delta, impr, imprDelta) => `*Кліки:* ${cur} (${delta}) · *Покази:* ${impr} (${imprDelta})`,
-    topGainers: "*📈 Найбільше зросли (сайти):*",
-    topLosers: "*📉 Найбільше просіли (сайти):*",
-    strikingHdr: n => `*🎯 На порозі топ-10 (поз. 4–20): ${n} запитів*`,
-    strikingRow: (kw, site, pos, impr) => `  ${kw} — ${site} · поз ${pos} · ${impr} показів`,
-    attentionHdr: "*🚨 Потребують уваги:*",
-    attentionDrop: (site, pct) => `  ${site} — трафік впав на ${pct}%`,
-    engineHdr: name => `*🔎 ${name} (живі дані):*`,
-    engineTotals: (clicks, impr) => `  ${clicks} кліків · ${impr} показів`,
-    engineTopSite: (name, clicks, impr) => `  ${name} — ${clicks} кліків · ${impr} показів`,
   },
 };
