@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, Globe, Settings, TrendingUp, Anchor, BarChart2, LogOut, ChevronDown } from "lucide-react";
+import { LayoutDashboard, Globe, Settings, TrendingUp, Anchor, BarChart2, LogOut, ChevronDown, Target } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
@@ -80,6 +80,7 @@ export default function Sidebar() {
     { href: "/striking", icon: <TrendingUp size={18} />, label: t("menuStriking") },
     { href: "/cannibalization", icon: <Anchor size={18} />, label: t("menuCannibalization") },
     { href: "/decay", icon: <BarChart2 size={18} />, label: t("menuDecay") },
+    { href: "/rank-tracker", icon: <Target size={18} />, label: t("navTopvisor") },
   ];
 
   const user = session?.user;

@@ -13,5 +13,9 @@ export async function register() {
     startAlertScheduler();
     const { startDigestScheduler } = await import('@/lib/digestScheduler');
     startDigestScheduler();
+    // Topvisor: polls waiting checks + syncs results, runs cost-capped auto-checks.
+    // Gated by TOPVISOR_RANK_TRACKER_ENABLED (no-op when disabled).
+    const { startTopvisorScheduler } = await import('@/lib/topvisor/topvisorScheduler');
+    startTopvisorScheduler();
   }
 }
