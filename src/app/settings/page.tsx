@@ -5,13 +5,14 @@ import { signIn, useSession } from "next-auth/react";
 import {
   ArrowLeft, Plus, X, CheckCircle, AlertCircle,
   Users, Settings, Globe, Key, KeyRound, Edit2, Copy,
-  ChevronDown, Crown, Zap, Star, Eye, Sparkles,
+  ChevronDown, Crown, Zap, Star, Eye, Sparkles, Target,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import SeoToolsSettings, { SeoProviderKeysSection, AeoProviderKeysSection } from "@/components/SeoToolsSettings";
+import TopvisorSettings from "@/components/TopvisorSettings";
 
-type NavItem = "accounts" | "bing" | "yandex" | "teams" | "api" | "api-keys" | "indexing-api" | "seo-tools" | "notifications" | "members" | "preferences" | "supersites";
+type NavItem = "accounts" | "bing" | "yandex" | "teams" | "api" | "api-keys" | "indexing-api" | "seo-tools" | "topvisor" | "notifications" | "members" | "preferences" | "supersites";
 
 interface ConnectedAccount {
   id: string; email: string; picture: string | null; connected: boolean; gscAccess: boolean; ga4Access?: boolean;
@@ -2033,7 +2034,7 @@ export default function SettingsPage() {
   // render with no SSR/hydration mismatch and no Suspense-boundary requirement.
   useEffect(() => {
     const tab = new URLSearchParams(window.location.search).get("tab");
-    const valid: NavItem[] = ["accounts", "bing", "yandex", "teams", "api", "api-keys", "indexing-api", "seo-tools", "notifications", "members", "preferences", "supersites"];
+    const valid: NavItem[] = ["accounts", "bing", "yandex", "teams", "api", "api-keys", "indexing-api", "seo-tools", "topvisor", "notifications", "members", "preferences", "supersites"];
     if (tab && (valid as string[]).includes(tab)) setNav(tab as NavItem);
   }, []);
 
@@ -2099,6 +2100,7 @@ export default function SettingsPage() {
             <NavBtn id="api" icon={<Key size={14} />} label={t("navApiMcpKeys")} />
             <NavBtn id="indexing-api" icon={<Globe size={14} />} label={t("navIndexingApi")} />
             <NavBtn id="seo-tools" icon={<Sparkles size={14} />} label={t("navSeoTools")} />
+            <NavBtn id="topvisor" icon={<Target size={14} />} label={t("navTopvisor")} />
             <NavBtn id="notifications" icon={<Zap size={14} />} label={t("navNotifications")} />
           </div>
 
@@ -2167,6 +2169,7 @@ export default function SettingsPage() {
           {nav === "api"          && <ApiSection />}
           {nav === "indexing-api" && <IndexApiSection />}
           {nav === "seo-tools"    && <SeoToolsSettings />}
+          {nav === "topvisor"     && <TopvisorSettings />}
           {nav === "notifications" && <NotificationsSection />}
           {nav === "members"      && <MembersSection user={user} />}
           {nav === "preferences"  && <PreferencesSection user={user} />}
