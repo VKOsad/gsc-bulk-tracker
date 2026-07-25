@@ -132,6 +132,8 @@ Link a GA4 property to any site (sessions, engagement, key events, revenue with 
 
 Track keyword rankings (country/language/device-aware) via your configured SERP provider (Serper, DataForSEO, or ScrapingRobot), checked on demand or daily, overlaid against real GSC average position, clicks, and impressions for the same query — so you can see whether a rank change actually moved traffic.
 
+**Project-based tracking via Topvisor** (`/rank-tracker`): connect a [Topvisor](https://topvisor.com) account (Settings → Съём позиций) to run full project rank tracking — create/link a Topvisor project per site, pick Google region + device + depth, import keywords, and view position history with movement / visibility / average & median position / Top distribution KPIs. **Costs are always quoted and confirmed before any paid check** (nothing runs automatically). Legacy SERP providers keep working as before. Set `TOPVISOR_ENCRYPTION_KEY` (see below); the API key is stored encrypted (AES-256-GCM), never in the browser or git. Docs: [docs/TOPVISOR-INTEGRATION.md](docs/TOPVISOR-INTEGRATION.md), [docs/TOPVISOR-RANK-TRACKER.md](docs/TOPVISOR-RANK-TRACKER.md).
+
 ### AEO Tracker — AI Answer Engine Visibility
 
 "Answer Engine Optimization": tracks whether **your site gets cited when real questions are asked to AI assistants** — ChatGPT and Perplexity via live web-search citation matching, Claude and Grok via brand-mention detection — building a per-engine, per-question cited/not-cited history over time. Needs the API key(s) of whichever engines you want to track.
