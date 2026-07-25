@@ -13,9 +13,9 @@ datasource db {
 model EnginePortfolioCache {
   id        String   @id @default(cuid())
   userId    String
-  engine    String   // "bing" | "yandex"
+  engine    String // "bing" | "yandex"
   period    String
-  data      String   // JSON: array of per-site portfolio payloads
+  data      String // JSON: array of per-site portfolio payloads
   updatedAt DateTime @updatedAt
 
   @@unique([userId, engine, period])
@@ -23,19 +23,19 @@ model EnginePortfolioCache {
 }
 
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token             String?
-  access_token              String?
-  expires_at                Int?
-  token_type                String?
-  scope                     String?
-  id_token                  String?
-  session_state             String?
-  refresh_token_expires_in  Int?
+  id                       String  @id @default(cuid())
+  userId                   String
+  type                     String
+  provider                 String
+  providerAccountId        String
+  refresh_token            String?
+  access_token             String?
+  expires_at               Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String?
+  session_state            String?
+  refresh_token_expires_in Int?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -88,10 +88,14 @@ model User {
   indexerDictionaries IndexerDictionary[]
 
   // SEO Tools background generation jobs
-  seoJobs             SeoJob[]
+  seoJobs SeoJob[]
 
   // GEO Audits (how AI search engines perceive the brand/niche)
-  geoAudits           GeoAudit[]
+  geoAudits GeoAudit[]
+
+  // Rank Tracker — Topvisor project-based rank tracking (see schema tail)
+  topvisorConnection TopvisorConnection?
+  rankJobs           RankJob[]
 }
 
 model VerificationToken {
@@ -103,97 +107,98 @@ model VerificationToken {
 }
 
 model Site {
-  id        String   @id @default(cuid())
-  userId    String
-  url       String
-  siteId    String   // GSC property root (sc-domain: or url)
-  tags             String?  // JSON array string or comma separated
-  brandedKeywords  String?  // JSON array e.g. ["ikea","ikea chair"]
-  createdAt        DateTime @default(now())
+  id              String   @id @default(cuid())
+  userId          String
+  url             String
+  siteId          String // GSC property root (sc-domain: or url)
+  tags            String? // JSON array string or comma separated
+  brandedKeywords String? // JSON array e.g. ["ikea","ikea chair"]
+  createdAt       DateTime @default(now())
 
   // Sitemap indexing
-  sitemapUrl       String?   // custom sitemap URL (defaults to url + /sitemap.xml)
-  crawlInterval    String?   // "disabled" | "daily" | "weekly" | "monthly"
-  lastSitemapSync  DateTime?
+  sitemapUrl      String? // custom sitemap URL (defaults to url + /sitemap.xml)
+  crawlInterval   String? // "disabled" | "daily" | "weekly" | "monthly"
+  lastSitemapSync DateTime?
 
-  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  metrics               DailyMetric[]
-  contentGroups         ContentGroup[]
-  topicClusters         TopicCluster[]
-  pageInspections       PageInspection[]
+  user                    User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  metrics                 DailyMetric[]
+  contentGroups           ContentGroup[]
+  topicClusters           TopicCluster[]
+  pageInspections         PageInspection[]
   pageInspectionHistories PageInspectionHistory[]
-  siteHealth            SiteHealth?
-  sitemapUrls           SitemapUrl[]
-  indexingOperations    IndexingOperation[]
-  backlinks             Backlink[]
-  siteAudits            SiteAudit[]
-  claritySnapshots      ClaritySnapshot[]
-  trackedKeywords       TrackedKeyword[]
-  trackedQuestions      TrackedQuestion[]
+  siteHealth              SiteHealth?
+  sitemapUrls             SitemapUrl[]
+  indexingOperations      IndexingOperation[]
+  backlinks               Backlink[]
+  siteAudits              SiteAudit[]
+  claritySnapshots        ClaritySnapshot[]
+  trackedKeywords         TrackedKeyword[]
+  trackedQuestions        TrackedQuestion[]
+  rankProjects            RankProject[]
 
   // Microsoft Clarity integration
-  clarityToken          String?   // Data Export API token (per-project in Clarity)
-  clarityProjectId      String?   // Clarity project ID (shown in Clarity dashboard URL)
-  clarityInterval       String?   // auto-collect cadence: "disabled" | "daily"
+  clarityToken     String? // Data Export API token (per-project in Clarity)
+  clarityProjectId String? // Clarity project ID (shown in Clarity dashboard URL)
+  clarityInterval  String? // auto-collect cadence: "disabled" | "daily"
 
   // Google Analytics 4 integration
-  ga4PropertyId         String?   // GA4 numeric property ID (e.g. "123456789")
-  ga4PropertyName       String?   // GA4 property display name (cached for UI)
+  ga4PropertyId   String? // GA4 numeric property ID (e.g. "123456789")
+  ga4PropertyName String? // GA4 property display name (cached for UI)
 
   // Client read-only share settings
-  shareEnabled          Boolean   @default(false)
-  shareToken            String?   @unique
+  shareEnabled Boolean @default(false)
+  shareToken   String? @unique
 
   @@unique([userId, siteId])
 }
 
 model SitemapUrl {
-  id            String    @id @default(cuid())
-  siteId        String
-  url           String
+  id     String @id @default(cuid())
+  siteId String
+  url    String
 
   // Google URL Inspection status
-  googleStatus   String?   // "Submitted and indexed", "URL is not on Google", etc.
-  googleCoverage String?   // raw coverage state
+  googleStatus   String? // "Submitted and indexed", "URL is not on Google", etc.
+  googleCoverage String? // raw coverage state
   googleReason   String?
   googleChecked  DateTime?
 
   // XML River check
-  xrStatus      String?   // "indexed" | "not_indexed" | "error"
-  xrChecked     DateTime?
+  xrStatus  String? // "indexed" | "not_indexed" | "error"
+  xrChecked DateTime?
 
   // 2index.ninja submission
-  twoIndexStatus String?  // "submitted" | "not_submitted"
+  twoIndexStatus String? // "submitted" | "not_submitted"
   twoIndexAt     DateTime?
 
   // NeuralIndexer submission
-  neuralStatus   String?  // "submitted"
-  neuralAt       DateTime?
-  neuralQueue    String?
+  neuralStatus String? // "submitted"
+  neuralAt     DateTime?
+  neuralQueue  String?
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  site          Site      @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
 
   @@unique([siteId, url])
   @@index([siteId])
 }
 
 model Backlink {
-  id            String    @id @default(cuid())
-  siteId        String
-  url           String    // the backlink URL (page that links to us)
-  title         String?   // page title from 404-check crawl
-  isAlive       Boolean?  // null = not checked; true = alive; false = dead/404
-  aliveChecked  DateTime?
-  xrStatus      String?   // "indexed" | "not_indexed" | "error"
-  xrChecked     DateTime?
-  twoIndexStatus String?  // "submitted"
-  twoIndexAt    DateTime?
-  addedAt       DateTime  @default(now())
+  id             String    @id @default(cuid())
+  siteId         String
+  url            String // the backlink URL (page that links to us)
+  title          String? // page title from 404-check crawl
+  isAlive        Boolean? // null = not checked; true = alive; false = dead/404
+  aliveChecked   DateTime?
+  xrStatus       String? // "indexed" | "not_indexed" | "error"
+  xrChecked      DateTime?
+  twoIndexStatus String? // "submitted"
+  twoIndexAt     DateTime?
+  addedAt        DateTime  @default(now())
 
-  site          Site      @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
 
   @@unique([siteId, url])
   @@index([siteId])
@@ -202,13 +207,14 @@ model Backlink {
 model IndexingOperation {
   id        String   @id @default(cuid())
   siteId    String
-  urlCount  Int?     // how many URLs were affected
-  type      String   // "sitemap_sync" | "google_check" | "xr_check" | "2index_submit" | "neural_submit"
-  result    String?  // "success" | "error" | "partial"
-  detail    String?  // JSON or text with extra info
+  urlCount  Int? // how many URLs were affected
+  type      String // "sitemap_sync" | "google_check" | "xr_check" | "2index_submit" | "neural_submit"
+  result    String? // "success" | "error" | "partial"
+  detail    String? // JSON or text with extra info
   createdAt DateTime @default(now())
 
-  site      Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
   @@index([siteId, createdAt])
 }
 
@@ -238,34 +244,52 @@ model TrackedKeyword {
   siteId        String
   keyword       String
   device        String    @default("desktop") // reserved: "desktop" | "mobile"
-  country       String    @default("us")      // gl code (2-letter)
-  lang          String    @default("en")      // hl code
+  country       String    @default("us") // gl code (2-letter)
+  lang          String    @default("en") // hl code
   createdAt     DateTime  @default(now())
   lastCheckedAt DateTime?
 
-  // Denormalized latest state for cheap list rendering
-  lastPosition  Int?      // null = not found in scanned depth
-  prevPosition  Int?      // position from the previous check
-  bestPosition  Int?
-  lastUrl       String?   // ranking URL found on the last check
+  // Denormalized latest state for cheap list rendering.
+  // For Topvisor keywords these mirror the PRIMARY region so the existing
+  // rank-drop alerts (alertScheduler, which reads lastPosition/prevPosition) keep working.
+  lastPosition Int? // null = not found in scanned depth
+  prevPosition Int? // position from the previous check
+  bestPosition Int?
+  lastUrl      String? // ranking URL found on the last check
 
-  site   Site        @relation(fields: [siteId], references: [id], onDelete: Cascade)
-  checks RankCheck[]
+  // ── Topvisor project-based tracking (provider-neutral; all nullable = non-breaking) ──
+  provider          String    @default("serp") // "serp" (legacy SERP providers) | "topvisor"
+  rankProjectId     String? // FK to RankProject when provider = "topvisor"
+  externalKeywordId String? // Topvisor keyword id
+  externalGroupId   String? // Topvisor group id
+  externalGroupName String? // Topvisor group name (default "Основная")
+  active            Boolean   @default(true)
+  lastRemoteSyncAt  DateTime?
 
-  @@unique([siteId, keyword, device, country])
+  site        Site         @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  rankProject RankProject? @relation(fields: [rankProjectId], references: [id], onDelete: Cascade)
+  checks      RankCheck[]
+
+  // provider added to the legacy unique so a Topvisor phrase never collides with a
+  // legacy "serp" phrase on the same site (and vice-versa). Legacy rows are always "serp".
+  @@unique([siteId, keyword, device, country, provider])
+  // Topvisor phrases are unique per project (rankProjectId null for legacy → NULLs distinct).
+  @@unique([rankProjectId, keyword])
   @@index([siteId])
   @@index([lastCheckedAt])
+  @@index([rankProjectId])
+  @@index([externalKeywordId])
 }
 
 // ─── Notifications (alerts + digests, delivered via the user's Telegram bot) ──
 model AlertEvent {
   id        String   @id @default(cuid())
   userId    String
-  type      String   // "rank_drop" | "traffic_drop" | "ssl_expiry" | "audit_score"
+  type      String // "rank_drop" | "traffic_drop" | "ssl_expiry" | "audit_score"
   siteId    String?
   title     String
   message   String
-  dedupeKey String   // stable key per logical event occurrence — prevents repeat alerts
+  dedupeKey String // stable key per logical event occurrence — prevents repeat alerts
   sent      Boolean  @default(false)
   createdAt DateTime @default(now())
 
@@ -278,8 +302,8 @@ model Digest {
   userId    String
   tag       String   @default("") // empty = all sites
   days      Int      @default(7)
-  content   String   // rendered Markdown
-  sentTo    String?  // "telegram" when delivered, null for on-screen only
+  content   String // rendered Markdown
+  sentTo    String? // "telegram" when delivered, null for on-screen only
   createdAt DateTime @default(now())
 
   @@index([userId, createdAt])
@@ -298,7 +322,7 @@ model SiteAudit {
   finishedAt   DateTime?
   maxPages     Int       @default(200)
   pagesCrawled Int       @default(0)
-  summary      String?   // JSON: issue counts, totals
+  summary      String? // JSON: issue counts, totals
   error        String?
 
   site  Site            @relation(fields: [siteId], references: [id], onDelete: Cascade)
@@ -311,7 +335,7 @@ model SiteAuditPage {
   id              String  @id @default(cuid())
   auditId         String
   url             String
-  httpStatus      Int     @default(0)   // 0 = fetch failed
+  httpStatus      Int     @default(0) // 0 = fetch failed
   redirectTo      String?
   contentType     String  @default("")
   title           String  @default("")
@@ -337,14 +361,26 @@ model RankCheck {
   id        String   @id @default(cuid())
   keywordId String
   checkedAt DateTime @default(now())
-  position  Int?     // null = not found
+  position  Int? // null = not found
   url       String?
-  depth     Int?     // how many results were scanned
+  depth     Int? // how many results were scanned
   error     String?
 
+  // ── Topvisor multi-region results (nullable = non-breaking) ──
+  // A keyword can have parallel rows per region/device — rankRegionId keeps them
+  // separate so one region's result never overwrites another's.
+  source            String    @default("serp") // "serp" | "topvisor"
+  rankRegionId      String?
+  externalCheckedAt DateTime? // the actual Topvisor check date (may differ from checkedAt)
+  snippet           String?
+  serpFeatures      String? // JSON (only when the API returns serp_features)
+  syncedAt          DateTime?
+
   keyword TrackedKeyword @relation(fields: [keywordId], references: [id], onDelete: Cascade)
+  region  RankRegion?    @relation(fields: [rankRegionId], references: [id], onDelete: SetNull)
 
   @@index([keywordId, checkedAt])
+  @@index([rankRegionId, checkedAt])
 }
 
 // ─── AEO Tracker (AI answer-engine citation monitoring) ──────────────────────
@@ -362,7 +398,7 @@ model TrackedQuestion {
 
   // Denormalized latest per-engine state for cheap list rendering — JSON:
   // { chatgpt: { cited, url, checkedAt }, perplexity: {...}, claude: {...}, grok: {...} }
-  lastResults   String?
+  lastResults String?
 
   site   Site       @relation(fields: [siteId], references: [id], onDelete: Cascade)
   checks AeoCheck[]
@@ -375,7 +411,7 @@ model TrackedQuestion {
 model AeoCheck {
   id         String   @id @default(cuid())
   questionId String
-  engine     String   // "chatgpt" | "perplexity" | "claude" | "grok"
+  engine     String // "chatgpt" | "perplexity" | "claude" | "grok"
   checkedAt  DateTime @default(now())
   cited      Boolean
   url        String?
@@ -383,6 +419,7 @@ model AeoCheck {
   error      String?
 
   question TrackedQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
   @@index([questionId, checkedAt])
 }
 
@@ -390,7 +427,7 @@ model ContentGroup {
   id        String   @id @default(cuid())
   siteId    String
   name      String
-  rules     String   // JSON: [{type:"contains"|"equals", values:string[]}]
+  rules     String // JSON: [{type:"contains"|"equals", values:string[]}]
   createdAt DateTime @default(now())
 
   site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
@@ -400,45 +437,47 @@ model TopicCluster {
   id        String   @id @default(cuid())
   siteId    String
   name      String
-  rules     String   // JSON: [{type:"contains"|"equals", values:string[]}]
+  rules     String // JSON: [{type:"contains"|"equals", values:string[]}]
   createdAt DateTime @default(now())
 
   site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
 }
 
 model PageInspection {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   siteId      String
   url         String
-  status      String   // e.g. "Submitted and indexed"
+  status      String // e.g. "Submitted and indexed"
   lastCrawl   DateTime?
   richResults String?
-  lastInspect DateTime @default(now())
+  lastInspect DateTime  @default(now())
 
   site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
   @@unique([siteId, url])
 }
 
 model PageInspectionHistory {
-  id          String   @id @default(cuid())
-  siteId      String
-  url         String
-  date        DateTime
-  status      String
+  id     String   @id @default(cuid())
+  siteId String
+  url    String
+  date   DateTime
+  status String
 
   site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
   @@unique([siteId, url, date])
 }
 
 // Microsoft Clarity — cached daily snapshots (API limit: 10 req/day, 3 days max)
 model ClaritySnapshot {
-  id          String   @id @default(cuid())
-  siteId      String
-  fetchedAt   DateTime @default(now())
-  periodDays  Int      // 1, 2, or 3 — numOfDays sent to API
-  data        String   // raw JSON from Clarity API
+  id         String   @id @default(cuid())
+  siteId     String
+  fetchedAt  DateTime @default(now())
+  periodDays Int // 1, 2, or 3 — numOfDays sent to API
+  data       String // raw JSON from Clarity API
 
-  site        Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
 
   @@index([siteId, fetchedAt])
 }
@@ -447,10 +486,10 @@ model SiteHealth {
   id           String   @id @default(cuid())
   siteId       String   @unique
   checkedAt    DateTime @default(now())
-  sslData      String?  // JSON: { valid, daysLeft, issuer, grade, error? }
-  safeBrowsing String?  // JSON: { safe, threats?, error? }
-  vitals       String?  // JSON: { lcp, fid, cls, ttfb, score, error? }
-  virusTotal   String?  // JSON: { clean, malicious, suspicious, error? }
+  sslData      String? // JSON: { valid, daysLeft, issuer, grade, error? }
+  safeBrowsing String? // JSON: { safe, threats?, error? }
+  vitals       String? // JSON: { lcp, fid, cls, ttfb, score, error? }
+  virusTotal   String? // JSON: { clean, malicious, suspicious, error? }
 
   site Site @relation(fields: [siteId], references: [id], onDelete: Cascade)
 }
@@ -458,59 +497,62 @@ model SiteHealth {
 // ─── Custom Indexer Bot Farm Models ──────────────────────────────────────────
 
 model IndexerDomain {
-  id              String         @id @default(cuid())
+  id              String   @id @default(cuid())
   userId          String
   domain          String
-  status          String         @default("active") // "active", "inactive", "expired"
-  createdAt       DateTime       @default(now())
-  apiKey          String         @default(cuid())
-  template        String         @default("ecommerce")
+  status          String   @default("active") // "active", "inactive", "expired"
+  createdAt       DateTime @default(now())
+  apiKey          String   @default(cuid())
+  template        String   @default("ecommerce")
   moneyUrl        String?
-  allowedBots     String         @default("google,bing,yandex,mailru,ai")
-  pagesCount      Int            @default(0)
-  subdomainsCount Int            @default(0)
-  
-  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  logs            IndexerLog[]
-  queue           IndexerQueue[]
+  allowedBots     String   @default("google,bing,yandex,mailru,ai")
+  pagesCount      Int      @default(0)
+  subdomainsCount Int      @default(0)
+
+  user  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs  IndexerLog[]
+  queue IndexerQueue[]
 
   @@unique([userId, domain])
 }
 
 model IndexerLog {
-  id        String        @id @default(cuid())
-  domainId  String
-  timestamp DateTime      @default(now())
-  url       String
-  ip        String
-  userAgent String
-  botType   String        // "google", "bing", "yandex", "other", "redirect"
-  statusCode Int          @default(200)
-  referer   String?
+  id         String   @id @default(cuid())
+  domainId   String
+  timestamp  DateTime @default(now())
+  url        String
+  ip         String
+  userAgent  String
+  botType    String // "google", "bing", "yandex", "other", "redirect"
+  statusCode Int      @default(200)
+  referer    String?
 
-  domain    IndexerDomain @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  domain IndexerDomain @relation(fields: [domainId], references: [id], onDelete: Cascade)
+
   @@index([domainId, timestamp])
 }
 
 model IndexerQueue {
-  id        String        @id @default(cuid())
+  id        String    @id @default(cuid())
   domainId  String
   url       String
-  status    String        @default("pending") // "pending", "crawled", "indexed"
-  createdAt DateTime      @default(now())
+  status    String    @default("pending") // "pending", "crawled", "indexed"
+  createdAt DateTime  @default(now())
   crawledAt DateTime?
 
-  domain    IndexerDomain @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  domain IndexerDomain @relation(fields: [domainId], references: [id], onDelete: Cascade)
+
   @@unique([domainId, url])
 }
 
 model IndexerDictionary {
-  id        String        @id @default(cuid())
+  id        String   @id @default(cuid())
   userId    String
   word      String
-  createdAt DateTime      @default(now())
+  createdAt DateTime @default(now())
 
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([userId, word])
 }
 
@@ -520,16 +562,17 @@ model IndexerDictionary {
 model SeoJob {
   id        String   @id @default(cuid())
   userId    String
-  type      String   // "outline" | "text" | "analysis" | "landing"
+  type      String // "outline" | "text" | "analysis" | "landing"
   keyword   String   @default("")
   status    String   @default("processing") // "processing" | "completed" | "error"
-  result    String?  // JSON string of the result (outline object / { text, ... } / report)
+  result    String? // JSON string of the result (outline object / { text, ... } / report)
   error     String?
-  meta      String?  // JSON string (tone, promptType, outlineId, factcheck/images flags…)
+  meta      String? // JSON string (tone, promptType, outlineId, factcheck/images flags…)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId, createdAt])
 }
 
@@ -537,24 +580,24 @@ model SeoJob {
 // Structured entity facts (slots, casinos) injected into outline/text generation.
 // Populated by scripts/import-rag.ts from CSV exports; matched by normalized name.
 model RagSlot {
-  id         String  @id @default(cuid())
+  id         String @id @default(cuid())
   name       String
-  nameNorm   String  // lowercase, trimmed — for keyword containment matching
-  provider   String  @default("")
-  released   String  @default("")  // release date/year as text (source formats vary)
-  slotType   String  @default("")  // "Видео слоты" / genre
-  rtp        String  @default("")
-  volatility String  @default("")
-  maxWin     String  @default("")
-  minBet     String  @default("")
-  maxBet     String  @default("")
-  layout     String  @default("")  // e.g. "5-3" reels x rows
-  lines      String  @default("")
-  features   String  @default("")  // comma-separated feature list
-  themes     String  @default("")
-  demoUrl    String  @default("")
-  platform   String  @default("")
-  source     String  @default("")  // "35k" | "demo"
+  nameNorm   String // lowercase, trimmed — for keyword containment matching
+  provider   String @default("")
+  released   String @default("") // release date/year as text (source formats vary)
+  slotType   String @default("") // "Видео слоты" / genre
+  rtp        String @default("")
+  volatility String @default("")
+  maxWin     String @default("")
+  minBet     String @default("")
+  maxBet     String @default("")
+  layout     String @default("") // e.g. "5-3" reels x rows
+  lines      String @default("")
+  features   String @default("") // comma-separated feature list
+  themes     String @default("")
+  demoUrl    String @default("")
+  platform   String @default("")
+  source     String @default("") // "35k" | "demo"
 
   @@index([nameNorm])
   @@index([provider])
@@ -565,13 +608,13 @@ model RagSlot {
 // Server-side copy of the SEO Tools generation history (outlines/texts/analyses).
 // The browser's localStorage stays the working cache; this table survives browser resets.
 model SeoHistory {
-  id        String   @id            // client-generated history id
+  id        String   @id // client-generated history id
   userId    String
   type      String
   keyword   String   @default("")
   status    String   @default("completed")
-  data      String                  // JSON payload (outline object / article markdown)
-  meta      String?                 // JSON meta
+  data      String // JSON payload (outline object / article markdown)
+  meta      String? // JSON meta
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -597,7 +640,7 @@ model LinkWatchBrand {
 model LinkMention {
   id         String   @id @default(cuid())
   userId     String
-  brand      String   // watched brand domain
+  brand      String // watched brand domain
   urlFrom    String
   domainFrom String
   title      String   @default("")
@@ -635,16 +678,155 @@ model RagCasino {
 model GeoAudit {
   id        String   @id @default(cuid())
   userId    String
-  query     String   @default("")  // the keyword / search query that was audited
+  query     String   @default("") // the keyword / search query that was audited
   language  String   @default("en")
   country   String   @default("us")
-  model     String   @default("")  // engine model used (e.g. "gpt-5")
+  model     String   @default("") // engine model used (e.g. "gpt-5")
   status    String   @default("processing") // "processing" | "completed" | "error"
-  report    String?  // JSON string: full audit report (metrics + analytics + raw answer)
+  report    String? // JSON string: full audit report (metrics + analytics + raw answer)
   error     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Rank Tracker — Topvisor project-based rank tracking.
+// Topvisor is the source of truth for remote projects, regions, keywords,
+// results, price and check status. Locally we store only the binding, settings,
+// latest positions, and a TTL'd summary cache — never a full copy of all history.
+// All new fields are additive/nullable so `prisma db push` applies them safely.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Encrypted Topvisor API credentials, one per user. The API key is AES-256-GCM
+// encrypted with TOPVISOR_ENCRYPTION_KEY and only ever decrypted inside a
+// server-side call — never returned to the browser, logged, or committed.
+model TopvisorConnection {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  apiUserId       String // Topvisor "User-Id" header value (not secret)
+  encryptedApiKey String // AES-256-GCM ciphertext (base64)
+  keyIv           String // base64 IV (12 bytes)
+  keyAuthTag      String // base64 GCM auth tag (16 bytes)
+  status          String    @default("unverified") // unverified | connected | error
+  lastVerifiedAt  DateTime?
+  lastError       String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Binding of a local OpenGSC Site to a remote Topvisor project. Provider-neutral
+// so another project-based provider can be added later.
+model RankProject {
+  id                   String    @id @default(cuid())
+  siteId               String
+  provider             String    @default("topvisor")
+  externalProjectId    String? // Topvisor project id (null until created/linked)
+  externalProjectName  String?
+  normalizedDomain     String // canonical host used for dedupe
+  status               String    @default("draft") // draft|partial|active|checking|syncing|error|disconnected
+  autoCheckEnabled     Boolean   @default(false)
+  scheduleType         String    @default("manual") // manual|daily|weekly
+  scheduleTime         String? // "HH:MM" local
+  scheduleTimezone     String?   @default("Europe/Warsaw")
+  scheduleDays         String? // JSON array of weekday ints (0-6) for weekly
+  costLimit            Float? // max allowed cost per scheduled run (account currency)
+  favorite             Boolean   @default(false)
+  lastRemoteSyncAt     DateTime?
+  lastCheckRequestedAt DateTime?
+  lastCheckCompletedAt DateTime?
+  lastError            String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  site      Site               @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  regions   RankRegion[]
+  keywords  TrackedKeyword[]
+  jobs      RankJob[]
+  summaries RankSummaryCache[]
+
+  // One binding per site per provider (lifecycle handled via status transitions).
+  @@unique([siteId, provider])
+  @@index([siteId])
+  @@index([provider, externalProjectId])
+  @@index([status])
+}
+
+// A searcher+region+language+device+depth combination attached to a project.
+// region_key is the input for ADDING a region; region_index is the input for
+// history/price/check queries — both are stored (they are NOT interchangeable).
+model RankRegion {
+  id            String   @id @default(cuid())
+  rankProjectId String
+  searcherKey   Int      @default(1) // Google = 1
+  regionKey     Int // Topvisor global region id (used to ADD the region)
+  regionIndex   Int? // per-project searcher+region index (used to QUERY); set after re-fetch
+  regionName    String?
+  countryCode   String?
+  language      String   @default("en")
+  device        Int      @default(0) // 0 desktop | 1 tablet | 2 phone
+  depth         Int      @default(1) // 1..5 (Google: 1=Top10 … 5=Top50); Google Top-100 is not supported
+  enabled       Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  project RankProject @relation(fields: [rankProjectId], references: [id], onDelete: Cascade)
+  checks  RankCheck[]
+
+  @@unique([rankProjectId, regionKey, language, device])
+  @@index([rankProjectId])
+}
+
+// Async operation tracking so paid checks run as background jobs, never inside an
+// open HTTP request. Idempotency + double-click protection live at this layer.
+model RankJob {
+  id            String    @id @default(cuid())
+  userId        String
+  rankProjectId String?
+  type          String // create_project|import_keywords|price|check|sync
+  status        String    @default("queued") // queued|running|waiting_remote|completed|failed|cancelled
+  progress      Int       @default(0) // 0..100
+  remoteStatus  String? // Topvisor status_positions / percent snapshot
+  estimatedCost Float?
+  currency      String?
+  payload       String? // JSON input (regions_indexes, groups_ids, filters…)
+  result        String? // JSON output/summary
+  errorCode     String?
+  errorMessage  String?
+  startedAt     DateTime?
+  finishedAt    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project RankProject? @relation(fields: [rankProjectId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([rankProjectId, status])
+  @@index([status])
+}
+
+// TTL'd cache of Topvisor summary / summary_chart payloads so the portfolio and
+// project pages render from the local DB, not 500 live API calls.
+model RankSummaryCache {
+  id            String   @id @default(cuid())
+  rankProjectId String
+  rankRegionId  String?
+  scope         String   @default("summary") // summary | chart
+  dateFrom      String // ISO date
+  dateTo        String // ISO date
+  data          String // JSON payload from Topvisor
+  expiresAt     DateTime
+  updatedAt     DateTime @updatedAt
+
+  project RankProject @relation(fields: [rankProjectId], references: [id], onDelete: Cascade)
+
+  @@unique([rankProjectId, rankRegionId, scope, dateFrom, dateTo])
+  @@index([rankProjectId])
+  @@index([expiresAt])
 }
