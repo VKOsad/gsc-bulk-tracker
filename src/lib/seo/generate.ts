@@ -538,7 +538,7 @@ export async function genOutline(b: any): Promise<GenResult> {
 // and models copied it verbatim regardless of article language; even the old chunked-path list
 // only covered ru/uk/fr). Extend this map rather than relying on the LLM to translate one word.
 const TOC_LABELS: Record<string, string> = {
-  ru: "Содержание", uk: "Зміст", fr: "Sommaire", es: "Índice", de: "Inhalt", it: "Indice",
+  ru: "Содержание", fr: "Sommaire", es: "Índice", de: "Inhalt", it: "Indice",
   pt: "Índice", pl: "Spis treści", tr: "İçindekiler", nl: "Inhoud", ro: "Cuprins", cs: "Obsah",
   sk: "Obsah", hu: "Tartalom", bg: "Съдържание", el: "Περιεχόμενα", ar: "المحتويات",
   ja: "目次", ko: "목차", zh: "目录", sv: "Innehåll", da: "Indhold", no: "Innhold", fi: "Sisällys",

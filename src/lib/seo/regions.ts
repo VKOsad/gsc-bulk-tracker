@@ -113,7 +113,6 @@ const COUNTRIES_RAW: { code: string; label: string }[] = [
 const LANGUAGES_RAW: { code: string; label: string }[] = [
   { code: "en", label: "English" },
   { code: "ru", label: "Russian" },
-  { code: "uk", label: "Ukrainian" },
   { code: "el", label: "Greek" },
   { code: "de", label: "German" },
   { code: "fr", label: "French" },

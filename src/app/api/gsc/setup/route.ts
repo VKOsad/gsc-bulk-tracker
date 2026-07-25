@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { google } from 'googleapis';
 
-const LANG = new Set(['el','de','fr','ru','en','es','it','pl','nl','pt','tr','ar','zh','bg','ro','cs','sk','hr','sr','uk','hu']);
+const LANG = new Set(['el','de','fr','ru','en','es','it','pl','nl','pt','tr','ar','zh','bg','ro','cs','sk','hr','sr','hu']);
 
 function humanizeSlug(s: string): string {
   return s.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).trim();
