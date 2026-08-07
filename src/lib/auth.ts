@@ -89,30 +89,44 @@ export const authOptions: NextAuthOptions = {
         });
       }
 
-      // If the OAuth email is different from the owner's email, redirect to settings 
-      // instead of returning true. This prevents NextAuth from trying to create a new User 
-      // and a new Account (which would crash due to the unique constraint).
-      if (account.providerAccountId !== owner.email && user.email !== owner.email) {
-        return "/settings";
-      }
+      // ── Shared-workspace model ────────────────────────────────────────────
+      // Data is always scoped to the OWNER, so every member sees the same aggregated
+      // dashboard across all connected Google accounts. But each member keeps their
+      // OWN identity (email / name / avatar) for display — carried by the jwt/session
+      // callbacks below. So signing in with cruegeraxesam@gmail.com shows you as
+      // cruegeraxesam while still using the shared panel.
+      user.id = owner.id;
+      if (user.email === owner.email) return true; // owner signs in as the owner
 
-      user.id    = owner.id;
-      user.email = owner.email!;
-      user.name  = owner.name;
-      user.image = owner.image;
-      return true;
+      // Non-owner member: an already-linked account can return true (NextAuth then
+      // uses the callbackUrl, e.g. the dashboard). A brand-new account returns a
+      // redirect URL to short-circuit NextAuth's user-creation, which would otherwise
+      // crash on the account we just linked to the owner.
+      return existing ? true : "/";
     },
 
     async session({ session, token }) {
-      if (session?.user && token?.sub) {
-        // @ts-ignore
-        session.user.id = token.sub;
+      if (session?.user) {
+        // owner id → data scope (shared workspace)
+        if (token?.sub) session.user.id = token.sub;
+        // real logged-in identity → what the UI shows
+        if (token?.email) session.user.email = token.email as string;
+        if (token?.name) session.user.name = token.name as string;
+        if (token?.picture) session.user.image = token.picture as string;
       }
       return session;
     },
 
-    async jwt({ token, user }) {
-      if (user) token.sub = user.id;
+    async jwt({ token, user, profile }) {
+      if (user) token.sub = user.id; // owner.id — keeps the shared data scope
+      // On sign-in the raw Google profile is present — capture the member's real
+      // identity so the session displays whoever actually logged in.
+      if (profile) {
+        const p = profile as { email?: string; name?: string; picture?: string };
+        if (p.email) token.email = p.email;
+        if (p.name) token.name = p.name;
+        if (p.picture) token.picture = p.picture;
+      }
       return token;
     },
   },

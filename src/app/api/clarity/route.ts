@@ -14,7 +14,9 @@ export async function GET(req: NextRequest) {
   const siteDbId = searchParams.get("siteId");
   if (!siteDbId) return NextResponse.json({ error: "Missing siteId" }, { status: 400 });
 
-  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  // Resolve by session user id (the shared-workspace owner), not email — members now
+  // keep their own display email, so an email lookup would miss the owner's data.
+  const user = await prisma.user.findUnique({ where: { id: (session.user as { id?: string }).id } });
   if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
   // Verify site belongs to user
@@ -57,7 +59,9 @@ export async function POST(req: NextRequest) {
 
   if (!siteId) return NextResponse.json({ error: "Missing siteId" }, { status: 400 });
 
-  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  // Resolve by session user id (the shared-workspace owner), not email — members now
+  // keep their own display email, so an email lookup would miss the owner's data.
+  const user = await prisma.user.findUnique({ where: { id: (session.user as { id?: string }).id } });
   if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
   const site = await prisma.site.findFirst({ where: { id: siteId, userId: user.id } });
